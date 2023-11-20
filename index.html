@@ -69,13 +69,38 @@
             const [response, setResponse] = React.useState("");
             const [question, setQuestion] = React.useState("");
             const [loading, setLoading] = React.useState(false);
+            const [WS, setWS] = React.useState(null);
 
             React.useEffect(() => {
-                WS.onmessage = (event) => {
-                    setLoading(false);
-                    setResponse(marked.parse(event.data));
-                };
-            }, []);
+    const newWS = new WebSocket("ws://localhost:8000/ws");
+
+    newWS.onopen = () => {
+        console.log("WebSocket conectado.");
+        newWS.send("Olá, obrigado por vir conversar comigo! Como posso te ajudar?");
+    };
+
+    newWS.onmessage = (event) => {
+        setLoading(false);
+        setResponse(marked.parse(event.data));
+    };
+
+    newWS.onclose = () => {
+        console.log("WebSocket desconectado. Tentando reconectar...");
+        setTimeout(() => setWS(null), 3000); // Tenta reconectar após 3 segundos.
+    };
+
+    setWS((prevWS) => {
+        if (prevWS) {
+            prevWS.close();
+        }
+        return newWS;
+    });
+
+    return () => {
+        newWS.close();
+    };
+}, []); // Remova [WS] da lista de dependências
+
 
             return (
                 <Container maxWidth="lg">
