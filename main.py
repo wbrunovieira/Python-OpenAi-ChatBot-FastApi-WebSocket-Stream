@@ -4,7 +4,25 @@ import openai
 from openai import OpenAI
 from openai import AsyncOpenAI
 import os
+from google.cloud import secretmanager
 import asyncio
+
+def access_secret_version(project_id, secret_id, version_id):
+    """
+    Access the payload of the given secret version if it is enabled.
+    """
+    client = secretmanager.SecretManagerServiceClient()
+    name = f"projects/{project_id}/secrets/{secret_id}/versions/{version_id}"
+    response = client.access_secret_version(request={"name": name})
+    return response.payload.data.decode("UTF-8")
+
+# Exemplo de uso
+project_id = "assistentesitewb"  # Substitua pelo seu project ID do Google Cloud
+secret_id = "OPENAI_API_KEY"  # Substitua pelo nome do seu segredo
+version_id = "1"  # Pode ser um número de versão específico ou 'latest'
+minha_chave_secreta = access_secret_version(project_id, secret_id, version_id)
+
+# Agora, 'minha_chave_secreta' contém o valor do segredo
 
 from helpers import carrega
 
@@ -34,15 +52,16 @@ async def openai_talk(message: str):
     Você não deve responder perguntas que não sejam sobre a WB Digital Solutions!
     
     ##Informacoes da WB Digital Solutions:
+    [Inclua aqui outras informações relevantes do arquivo]
     {dados_wb_digital_solutions}
     """
     
-    prompt_usuario = f"{prompt_sistema} {message} \nResponda em portugues, seja educado e amigavel."
+    prompt_usuario = f"{prompt_sistema} {dados_wb_digital_solutions} {message} \nResponda em portugues, seja educado e amigavel."
     
     print("prompt:", prompt_usuario)
 
     response = await client.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model="gpt-4-1106-preview",
          messages=[
         {
             "role": "user",
