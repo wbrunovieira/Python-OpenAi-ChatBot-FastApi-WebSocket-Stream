@@ -3,38 +3,23 @@ from fastapi.responses import HTMLResponse
 import openai
 from openai import OpenAI
 from openai import AsyncOpenAI
+import yaml
+from dotenv import load_dotenv
+
+load_dotenv()
+
 import os
-from google.cloud import secretmanager
+
 import asyncio
 from helpers import carrega
 
 
-def access_secret_version(project_id, secret_id, version_id):
-    """
-    Access the payload of the given secret version if it is enabled.
-    """
-    client = secretmanager.SecretManagerServiceClient()
-    name = f"projects/{project_id}/secrets/{secret_id}/versions/{version_id}"
-    response = client.access_secret_version(request={"name": name})
-    return response.payload.data.decode("UTF-8")
-
-# Exemplo de uso
-project_id = "assistentesitewb"  # Substitua pelo seu project ID do Google Cloud
-secret_id = "OPENAI_API_KEY"  # Substitua pelo nome do seu segredo
-version_id = "1"  # Pode ser um número de versão específico ou 'latest'
-minha_chave_secreta = access_secret_version(project_id, secret_id, version_id)
-
-openai.api_key = minha_chave_secreta
-
-
-# Agora, 'minha_chave_secreta' contém o valor do segredo
-
 
 app = FastAPI()
 
-
-
-# Certifique-se de que a chave da API da OpenAI está definida como uma variável de ambiente
+minha_chave_secreta = os.getenv('OPENAI_API_KEY')
+if not minha_chave_secreta:
+    raise Exception("Chave da API da OpenAI não encontrada nas variáveis de ambiente.")
 
 
 
@@ -54,7 +39,7 @@ async def openai_talk(message: str):
     
     ##Informacoes da WB Digital Solutions:
     [Inclua aqui outras informações relevantes do arquivo]
-    {dados_wb_digital_solutions}
+    
     """
     
     prompt_usuario = f"{prompt_sistema} {dados_wb_digital_solutions} {message} \nResponda em portugues, seja educado e amigavel."
@@ -89,12 +74,14 @@ async def openai_talk(message: str):
     
 
 
-# @app.get("/")
-# async def web_app() -> HTMLResponse:
-#     """
-#     Web App
-#     """
-#     return HTMLResponse(html)
+@app.get("/")
+async def web_app() -> HTMLResponse:
+    """
+    Web App
+    """
+    # Aqui você precisa definir o HTML que quer retornar. Exemplo:
+    html = "<html><body><h1>Hello, World!</h1></body></html>"
+    return HTMLResponse(content=html)
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
@@ -104,13 +91,8 @@ async def websocket_endpoint(websocket: WebSocket):
         message = await websocket.receive_text()
         async for text in openai_talk(message):
             await websocket.send_text(text)
-    
-
-        
-        # Aqui você irá implementar a lógica para enviar a mensagem para a OpenAI e receber a resposta
-    
-   
+ 
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.1", port=8000 ,log_level="debug", reload=True)
+    uvicorn.run(app, host="0.0.0.0", port=8000 ,log_level="debug", reload=True)

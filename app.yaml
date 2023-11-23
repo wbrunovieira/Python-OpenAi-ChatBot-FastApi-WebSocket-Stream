@@ -1,2 +1,5 @@
 runtime: python39  # Escolha a versão do Python compatível com sua aplicação
 entrypoint: gunicorn -w 4 -k uvicorn.workers.UvicornWorker main:app  # Ajuste para o seu arquivo principal e o objeto app
+
+env_variables:
+  OPENAI_API_KEY: "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"
