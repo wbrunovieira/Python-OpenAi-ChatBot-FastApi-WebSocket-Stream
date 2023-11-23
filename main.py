@@ -6,6 +6,8 @@ from openai import AsyncOpenAI
 import os
 from google.cloud import secretmanager
 import asyncio
+from helpers import carrega
+
 
 def access_secret_version(project_id, secret_id, version_id):
     """
@@ -22,23 +24,22 @@ secret_id = "OPENAI_API_KEY"  # Substitua pelo nome do seu segredo
 version_id = "1"  # Pode ser um número de versão específico ou 'latest'
 minha_chave_secreta = access_secret_version(project_id, secret_id, version_id)
 
+openai.api_key = minha_chave_secreta
+
+
 # Agora, 'minha_chave_secreta' contém o valor do segredo
 
-from helpers import carrega
 
-from dotenv import load_dotenv
-
-load_dotenv()
 app = FastAPI()
 
 
 
 # Certifique-se de que a chave da API da OpenAI está definida como uma variável de ambiente
-openai.api_key = os.getenv("OPENAI_API_KEY")
 
 
 
-client = openai.AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+client = openai.AsyncOpenAI(api_key=minha_chave_secreta)
 max_tokens=3600
 
 
@@ -88,12 +89,12 @@ async def openai_talk(message: str):
     
 
 
-@app.get("/")
-async def web_app() -> HTMLResponse:
-    """
-    Web App
-    """
-    return HTMLResponse(html)
+# @app.get("/")
+# async def web_app() -> HTMLResponse:
+#     """
+#     Web App
+#     """
+#     return HTMLResponse(html)
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
