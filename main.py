@@ -10,12 +10,14 @@ from botocore.exceptions import ClientError
 from helpers import carrega
 from dotenv import load_dotenv
 
-load_dotenv()
 
 import json
 import boto3
 from botocore.exceptions import ClientError
 
+
+if Path('.env').exists():
+    load_dotenv()
 
 
 app = FastAPI()
