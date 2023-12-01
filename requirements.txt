@@ -1,6 +1,4 @@
-fastapi
-uvicorn
-openai
-gunicorn
-pyyaml
-python-dotenv
+fastapi==0.68.0
+uvicorn==0.15.0
+openai==0.10.2
+boto3==1.17.49

@@ -3,25 +3,51 @@ from fastapi.responses import HTMLResponse
 import openai
 from openai import OpenAI
 from openai import AsyncOpenAI
-import yaml
+import boto3
+from botocore.exceptions import ClientError
+
+
+from helpers import carrega
 from dotenv import load_dotenv
 
 load_dotenv()
 
-import os
-
-import asyncio
-from helpers import carrega
+import json
+import boto3
+from botocore.exceptions import ClientError
 
 
 
 app = FastAPI()
 
-minha_chave_secreta = os.getenv('OPENAI_API_KEY')
-if not minha_chave_secreta:
-    raise Exception("Chave da API da OpenAI não encontrada nas variáveis de ambiente.")
 
+def get_secret():
 
+    secret_name = "OPENAI_API_KEY"
+    region_name = "us-east-2"
+
+    # Create a Secrets Manager client
+    session = boto3.session.Session()
+    client = session.client(
+        service_name='secretsmanager',
+        region_name=region_name
+    )
+
+    try:
+        get_secret_value_response = client.get_secret_value(
+            SecretId=secret_name
+        )
+    except ClientError as e:
+        # For a list of exceptions thrown, see
+        # https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html
+        raise e
+
+    
+    # Descriptografa o segredo usando a chave KMS associada
+    secret = json.loads(get_secret_value_response['SecretString'])
+    return secret
+
+minha_chave_secreta = get_secret()
 
 
 client = openai.AsyncOpenAI(api_key=minha_chave_secreta)
