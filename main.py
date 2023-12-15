@@ -1,8 +1,9 @@
 from fastapi import FastAPI, WebSocket
 from fastapi.responses import HTMLResponse
+from pathlib import Path
 import openai
-from openai import OpenAI
-from openai import AsyncOpenAI
+
+
 import boto3
 from botocore.exceptions import ClientError
 
