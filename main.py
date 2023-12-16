@@ -1,7 +1,13 @@
 from fastapi import FastAPI, WebSocket
 from fastapi.responses import HTMLResponse
 from pathlib import Path
-import openai
+import os
+
+from openai import AsyncOpenAI
+
+
+print(openai.__version__)
+
 
 
 import boto3
@@ -24,7 +30,13 @@ if Path('.env').exists():
 app = FastAPI()
 
 
+
+
 def get_secret():
+    
+    minha_chave_secreta= os.getenv('OPENAI_API_KEY')
+    if minha_chave_secreta is not None:
+        return minha_chave_secreta
 
     secret_name = "OPENAI_API_KEY"
     region_name = "us-east-2"
@@ -53,7 +65,8 @@ def get_secret():
 minha_chave_secreta = get_secret()
 
 
-client = openai.AsyncOpenAI(api_key=minha_chave_secreta)
+client = AsyncOpenAI(api_key=minha_chave_secreta)
+
 max_tokens=3600
 
 
